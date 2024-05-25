@@ -22,10 +22,11 @@ on:
       armbian_board:
         description: "Select device board."
         required: false
-        default: "all"
+        default: "ai3399-c"
         type: choice
         options:
           - all
+          - ai3399-c
           - top55
           - after55
           - a311d-oes_s922x-oes-plus_wxy-oect
@@ -249,7 +250,7 @@ on:
       builder_name:
         description: "Set Armbian builder signature."
         required: false
-        default: "ophub"
+        default: "dearxjoe"
         type: choice
         options:
           - ophub
@@ -361,7 +362,7 @@ jobs:
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Rebuild Armbian [ ${{ inputs.set_release }} ]
-        uses: ophub/amlogic-s9xxx-armbian@main
+        uses: dearxjoe/amlogic-s9xxx-armbian@main
         if: ${{ steps.down.outputs.status }} == 'success' && !cancelled()
         with:
           build_target: armbian

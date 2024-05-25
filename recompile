@@ -6,12 +6,12 @@
 # warranty of any kind, whether express or implied.
 #
 # This file is a part of the Rebuild Armbian
-# https://github.com/ophub/amlogic-s9xxx-armbian
+# https://github.com/dearxjoe/amlogic-s9xxx-armbian
 #
 # Description: Run on the x86_64 and aarch64 platforms (ubuntu/debian), Compile the kernel.
 # Copyright (C) 2021~ https://www.kernel.org
 # Copyright (C) 2021~ https://github.com/unifreq
-# Copyright (C) 2021~ https://github.com/ophub/amlogic-s9xxx-armbian
+# Copyright (C) 2021~ https://github.com/dearxjoe/amlogic-s9xxx-armbian
 #
 # Command: sudo ./recompile
 # Command optional parameters please refer to the source code repository
@@ -65,7 +65,7 @@ host_version_id="$(cat /etc/os-release 2>/dev/null | grep '^VERSION_ID=.*' | cut
 [[ -z "${host_version_id}" ]] && host_version_id="2404"
 
 # Set the default for downloading kernel sources from github.com
-repo_owner="unifreq"
+repo_owner="dearxjoe"
 repo_branch="main"
 build_kernel=("6.1.y" "6.12.y")
 all_kernel=("5.10.y" "5.15.y" "6.1.y" "6.6.y" "6.12.y")
@@ -74,7 +74,7 @@ auto_kernel="true"
 # Set whether to apply custom kernel patches, options: [ true / false ]
 auto_patch="false"
 # Set custom signature for the kernel
-custom_name="-ophub"
+custom_name="-dearxjoe"
 # Set the kernel compile object, options: [ dtbs / all ]
 package_list="all"
 # Set the compression format, options: [ gzip / lzma / xz / zstd ]
@@ -99,6 +99,7 @@ kernel_config_download="false"
 
 # Cross compile toolchain download mirror
 dev_repo="https://github.com/ophub/kernel/releases/download/dev"
+#dev_repo="https://github.com/dearxjoe/kernel/releases/download/dev"
 # Arm GNU Toolchain source: https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
 gun_file_x86_64="arm-gnu-toolchain-14.3.rel1-x86_64-aarch64-none-linux-gnu.tar.xz"
 gun_file_aarch64="arm-gnu-toolchain-14.3.rel1-aarch64-aarch64-none-linux-gnu.tar.xz"

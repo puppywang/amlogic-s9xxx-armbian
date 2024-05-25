@@ -139,5 +139,9 @@ if [[ -n "$(dpkg -l | awk '{print $2}' | grep -w "^pve-manager$")" ]]; then
     log_message "PVE proxy service restart attempted."
 fi
 
-# Finalization
+# Add custom log
 log_message "All custom services have been processed."
+
+# watchdog ai3399-c 
+chmod +x /usr/bin/mcu-watchdog.sh
+nohup /usr/bin/mcu-watchdog.sh  >/dev/null 2>&1 &
