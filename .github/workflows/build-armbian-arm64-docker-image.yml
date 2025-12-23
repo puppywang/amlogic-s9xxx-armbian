@@ -24,10 +24,11 @@ on:
       docker_img:
         description: "Set the docker image"
         required: false
-        default: "ophub/armbian"
+        default: "puppywang/armbian"
         type: choice
         options:
           - ophub/armbian
+          - puppywang/armbian
 
 env:
   TZ: Etc/UTC

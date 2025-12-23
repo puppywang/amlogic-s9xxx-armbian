@@ -325,7 +325,7 @@ jobs:
           df -hT ${PWD}
           git clone -q --single-branch --depth=1 --branch=main https://github.com/armbian/build.git build
           ln -sf /builder/build ${{ github.workspace }}/build
-          ln -sf /builder/build /home/runner/work/_actions/ophub/amlogic-s9xxx-armbian/main/build
+          ln -sf /builder/build /home/runner/work/_actions/puppywang/amlogic-s9xxx-armbian/main/build
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Compile Armbian [ ${{ inputs.set_release }} ]
@@ -402,4 +402,4 @@ jobs:
             - Update command: `armbian-update`
             ### Applicable platform
             - 🐧 `arm64`
-            - 🐋 Docker image: https://hub.docker.com/u/ophub
+            - 🐋 Docker image: https://hub.docker.com/u/puppywang

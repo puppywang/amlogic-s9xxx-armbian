@@ -46,7 +46,7 @@ on:
         default: "all"
         type: choice
         options:
-          - 全部
+          - all
           - dtbs
       kernel_toolchain:
         description: "Select the compilation toolchain"
@@ -137,8 +137,8 @@ jobs:
         run: |
           df -hT ${PWD}
           mkdir -p /builder/{kernel,output,ccache}
-          ln -sf /builder/kernel /home/runner/work/_actions/ophub/amlogic-s9xxx-armbian/main/compile-kernel/kernel
-          ln -sf /builder/output /home/runner/work/_actions/ophub/amlogic-s9xxx-armbian/main/compile-kernel/output
+          ln -sf /builder/kernel /home/runner/work/_actions/puppywang/amlogic-s9xxx-armbian/main/compile-kernel/kernel
+          ln -sf /builder/output /home/runner/work/_actions/puppywang/amlogic-s9xxx-armbian/main/compile-kernel/output
           sudo rm -rf /root/.ccache
           sudo ln -sf /builder/ccache /root/.ccache
           echo "status=success" >> ${GITHUB_OUTPUT}
@@ -195,7 +195,7 @@ jobs:
           body: |
             - These are Mainline LTS(Long Term Support) kernels that provide `stable` support for Armbian.
             - It works with most `Amlogic`, `Rockchip`, and `Allwinner` devices. For specific details, please refer to the instructions on the homepage of repository.
-            - Dedicated BSP kernels for other Rockchip and Allwinner devices can be downloaded from the [ophub/kernel](https://github.com/ophub/kernel) repository.
+            - Dedicated BSP kernels for other Rockchip and Allwinner devices can be downloaded from the [puppywang/kernel](https://github.com/puppywang/kernel) repository.
             - 这些是主线 LTS（长期支持）内核，为 Armbian 提供`稳定`的支持。
             - 适用于 `amlogic`，`rockchip`，`allwinner` 的大部分设备，具体可以参考仓库首页的说明。
-            - 其他的 Rockchip 和 Allwinner 设备专用 BSP 内核可以在 [ophub/kernel](https://github.com/ophub/kernel) 仓库里下载使用。
+            - 其他的 Rockchip 和 Allwinner 设备专用 BSP 内核可以在 [puppywang/kernel](https://github.com/puppywang/kernel) 仓库里下载使用。

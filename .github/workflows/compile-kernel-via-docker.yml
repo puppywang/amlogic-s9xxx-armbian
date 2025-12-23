@@ -13,11 +13,12 @@ on:
       kernel_source:
         description: "Select the kernel source"
         required: false
-        default: "unifreq"
+        default: "puppywang"
         type: choice
         options:
           - unifreq
           - ophub
+          - puppywang
       kernel_version:
         description: "Select kernel version"
         required: false
@@ -75,11 +76,11 @@ on:
       kernel_sign:
         description: "Set the kernel custom signature"
         required: false
-        default: "-ophub"
+        default: "-puppywang"
         type: choice
         options:
           - -ophub
-          - -yourname
+          - -puppywang
 
 env:
   TZ: Etc/UTC
@@ -157,19 +158,19 @@ jobs:
         run: |
           # Create a docker mapping directory
           mkdir -p /builder/{compile-kernel/{kernel,output},ccache}
-          ln -sf /builder/compile-kernel/kernel /home/runner/work/_actions/ophub/amlogic-s9xxx-armbian/main/compile-kernel/kernel
-          ln -sf /builder/compile-kernel/output /home/runner/work/_actions/ophub/amlogic-s9xxx-armbian/main/compile-kernel/output
+          ln -sf /builder/compile-kernel/kernel /home/runner/work/_actions/puppywang/amlogic-s9xxx-armbian/main/compile-kernel/kernel
+          ln -sf /builder/compile-kernel/output /home/runner/work/_actions/puppywang/amlogic-s9xxx-armbian/main/compile-kernel/output
 
           # Pull the Armbian Docker image
           docker run -d --privileged \
-              --name armbian-ophub \
+              --name armbian-puppywang \
               -v /builder/compile-kernel:/opt/kernel/compile-kernel \
               -v /builder/ccache:/root/.ccache \
               -v /etc/localtime:/etc/localtime:ro \
               -v /etc/timezone:/etc/timezone:ro \
               -e CCACHE_DIR=/root/.ccache \
               --restart=always \
-              ophub/armbian-${{ inputs.docker_image }}:arm64
+              puppywang/armbian-${{ inputs.docker_image }}:arm64
 
           echo "status=success" >> ${GITHUB_OUTPUT}
 
@@ -198,7 +199,7 @@ jobs:
             kernel-${{ inputs.kernel_toolchain }}-${{ inputs.kernel_version }}-
 
       - name: Compile the kernel [ ${{ inputs.kernel_version }} ]
-        uses: ophub/amlogic-s9xxx-armbian@main
+        uses: puppywang/amlogic-s9xxx-armbian@main
         if: ${{ steps.pull.outputs.status }} == 'success' && !cancelled()
         with:
           build_target: kernel
@@ -225,7 +226,7 @@ jobs:
           body: |
             - These are Mainline LTS(Long Term Support) kernels that provide `stable` support for Armbian.
             - It works with most `Amlogic`, `Rockchip`, and `Allwinner` devices. For specific details, please refer to the instructions on the homepage of repository.
-            - Dedicated BSP kernels for other Rockchip and Allwinner devices can be downloaded from the [ophub/kernel](https://github.com/ophub/kernel) repository.
+            - Dedicated BSP kernels for other Rockchip and Allwinner devices can be downloaded from the [puppywang/kernel](https://github.com/puppywang/kernel) repository.
             - 这些是主线 LTS（长期支持）内核，为 Armbian 提供`稳定`的支持。
             - 适用于 `amlogic`，`rockchip`，`allwinner` 的大部分设备，具体可以参考仓库首页的说明。
-            - 其他的 Rockchip 和 Allwinner 设备专用 BSP 内核可以在 [ophub/kernel](https://github.com/ophub/kernel) 仓库里下载使用。
+            - 其他的 Rockchip 和 Allwinner 设备专用 BSP 内核可以在 [puppywang/kernel](https://github.com/puppywang/kernel) 仓库里下载使用。

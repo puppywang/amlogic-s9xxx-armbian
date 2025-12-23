@@ -26,6 +26,7 @@ on:
         type: choice
         options:
           - ophub/armbian
+          - puppywang/armbian
           - none
 
 env:
@@ -144,7 +145,7 @@ jobs:
             - Default password: `1234`
             ### Applicable platform
             - 💻 `amd64(uefi-x86)`
-            - 🐋 Docker image: https://hub.docker.com/u/ophub
+            - 🐋 Docker image: https://hub.docker.com/u/puppywang
 
       - name: Build the Docker image
         id: makedocker
