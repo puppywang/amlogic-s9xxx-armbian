@@ -163,14 +163,14 @@ jobs:
 
           # Pull the Armbian Docker image
           docker run -d --privileged \
-              --name armbian-puppywang \
+              --name armbian-ophub \
               -v /builder/compile-kernel:/opt/kernel/compile-kernel \
               -v /builder/ccache:/root/.ccache \
               -v /etc/localtime:/etc/localtime:ro \
               -v /etc/timezone:/etc/timezone:ro \
               -e CCACHE_DIR=/root/.ccache \
               --restart=always \
-              puppywang/armbian-${{ inputs.docker_image }}:arm64
+              ophub/armbian-${{ inputs.docker_image }}:arm64
 
           echo "status=success" >> ${GITHUB_OUTPUT}
 
