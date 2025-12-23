@@ -250,11 +250,12 @@ on:
       builder_name:
         description: "Set Armbian builder signature."
         required: false
-        default: "dearxjoe"
+        default: "puppywang"
         type: choice
         options:
           - ophub
           - angel
+          - puppywang
 
 env:
   TZ: Etc/UTC
@@ -362,7 +363,7 @@ jobs:
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Rebuild Armbian [ ${{ inputs.set_release }} ]
-        uses: dearxjoe/amlogic-s9xxx-armbian@main
+        uses: puppywang/amlogic-s9xxx-armbian@main
         if: ${{ steps.down.outputs.status }} == 'success' && !cancelled()
         with:
           build_target: armbian

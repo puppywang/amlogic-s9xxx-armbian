@@ -1,5 +1,5 @@
 #==========================================================================
-# https://github.com/dearxjoe/amlogic-s9xxx-armbian
+# https://github.com/puppywang/amlogic-s9xxx-armbian
 # Description: Delete older releases and workflows runs
 #==========================================================================
 
@@ -106,7 +106,7 @@ jobs:
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Delete releases and workflows runs
-        uses: dearxjoe/delete-releases-workflows@main
+        uses: puppywang/delete-releases-workflows@main
         with:
           delete_releases: ${{ inputs.delete_releases }}
           delete_tags: ${{ inputs.delete_tags }}

@@ -19,7 +19,7 @@ inputs:
   kernel_repo:
     description: "Set kernel repository."
     required: false
-    default: "dearxjoe/kernel"
+    default: "puppywang/kernel"
   kernel_usage:
     description: "Set the tags of the stable kernel."
     required: false
@@ -52,7 +52,7 @@ inputs:
   kernel_source:
     description: "Select the kernel source code"
     required: false
-    default: "dearxjoe"
+    default: "puppywang"
   kernel_version:
     description: "Select kernel version"
     required: false
@@ -68,7 +68,7 @@ inputs:
   kernel_sign:
     description: "Set the kernel custom signature"
     required: false
-    default: "-dearxjoe"
+    default: "-puppywang"
   kernel_toolchain:
     description: "Select the compilation toolchain"
     required: false

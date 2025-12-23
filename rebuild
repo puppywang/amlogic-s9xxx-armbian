@@ -83,7 +83,7 @@ firmware_repo="https://github.com/ophub/firmware"
 
 # Set the kernel download repository from github.com
 #kernel_repo="https://github.com/ophub/kernel"
-kernel_repo="https://github.com/dearxjoe/kernel"
+kernel_repo="https://github.com/puppywang/kernel"
 # Set the tags(kernel_xxx) of the default kernel that can be replaced via the [ -u ] parameter
 default_tags="stable"
 kernel_usage=""

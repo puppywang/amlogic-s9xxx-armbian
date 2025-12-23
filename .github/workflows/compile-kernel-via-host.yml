@@ -13,12 +13,12 @@ on:
       kernel_source:
         description: "Select the kernel source"
         required: false
-        default: "dearxjoe"
+        default: "puppywang"
         type: choice
         options:
           - unifreq
           - ophub
-          - dearxjoe
+          - puppywang
       kernel_version:
         description: "Select kernel version"
         required: false
@@ -66,11 +66,11 @@ on:
       kernel_sign:
         description: "Set the kernel custom signature"
         required: false
-        default: "-dearxjoe"
+        default: "-puppywang"
         type: choice
         options:
           - -ophub
-          - -dearxjoe
+          - -puppywang
 
 env:
   TZ: Etc/UTC
@@ -168,7 +168,7 @@ jobs:
             kernel-${{ inputs.kernel_toolchain }}-${{ inputs.kernel_version }}-
 
       - name: Compile the kernel [ ${{ inputs.kernel_version }} ]
-        uses: dearxjoe/amlogic-s9xxx-armbian@main
+        uses: puppywang/amlogic-s9xxx-armbian@main
         if: ${{ steps.mapped.outputs.status }} == 'success' && !cancelled()
         with:
           build_target: kernel

@@ -217,11 +217,11 @@ on:
       kernel_repo:
         description: "Set the kernel repository."
         required: false
-        default: "dearxjoe/kernel"
+        default: "puppywang/kernel"
         type: choice
         options:
           - ophub/kernel
-          - dearxjoe/kernel
+          - puppywang/kernel
           
       kernel_usage:
         description: "Set the tags of the stable kernel."
@@ -252,12 +252,12 @@ on:
       builder_name:
         description: "Set Armbian builder signature."
         required: false
-        default: "dearxjoe"
+        default: "puppywang"
         type: choice
         options:
           - ophub
           - angel
-          - dearxjoe
+          - puppywang
 
 env:
   TZ: Etc/UTC
@@ -368,7 +368,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Rebuild Armbian
-        uses: dearxjoe/amlogic-s9xxx-armbian@main
+        uses: puppywang/amlogic-s9xxx-armbian@main
         if: ${{ steps.clean.outputs.status }} == 'success' && !cancelled()
         with:
           build_target: armbian
