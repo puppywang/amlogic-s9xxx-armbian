@@ -96,6 +96,12 @@ rk35xx_kernel=("6.12.y")
 h6_kernel=("6.6.y")
 specific_6xy=("6.12.y")
 specific_5xy=("5.10.y" "5.15.y")
+
+# Debug: Print kernel arrays
+echo -e "${INFO} 🐛 DEBUG: stable_kernel=${stable_kernel[@]}"
+echo -e "${INFO} 🐛 DEBUG: rk3588_kernel=${rk3588_kernel[@]}"
+echo -e "${INFO} 🐛 DEBUG: rk35xx_kernel=${rk35xx_kernel[@]}"
+
 # Set to automatically use the latest kernel
 auto_kernel="true"
 # Initialize the kernel array
@@ -313,6 +319,7 @@ check_data() {
             sort -u | xargs
     ))
     [[ "${#kernel_from[@]}" -eq 0 ]] && error_msg "Missing [ KERNEL_TAGS ] settings, stop building."
+    echo -e "${INFO} 🐛 DEBUG: kernel_from array: ${kernel_from[@]}"
     # Replace custom kernel tags
     [[ -n "${kernel_usage}" ]] && {
         for ((i = 0; i < ${#kernel_from[@]}; i++)); do
@@ -326,11 +333,13 @@ check_data() {
     for item in "${kernel_from[@]}"; do
         # Split the key and value
         IFS='/' read -r key value <<<"${item}"
+        echo -e "${INFO} 🐛 DEBUG: Processing item [${item}], key=[${key}], value=[${value}]"
 
         # Check if the value is "all".
         if [[ "${value}" == "all" ]]; then
             # If the value is "all", assign the value of ${key}_kernel. such as [ stable_kernel, rk3588_kernel, etc. ]
             eval "value=\"\${${key}_kernel[@]}\""
+            echo -e "${INFO} 🐛 DEBUG: Expanded 'all' to: ${value}"
         elif [[ "${value}" =~ ^[1-9]+ ]]; then
             if [[ "${value}" == "5.x.y" ]]; then
                 value="${specific_5xy[@]}"
@@ -438,6 +447,12 @@ download_depends() {
 query_kernel() {
     echo -e "${STEPS} Start querying the latest kernel version..."
 
+    # Debug: Print tags_list content
+    echo -e "${INFO} 🐛 DEBUG: tags_list keys: ${!tags_list[@]}"
+    for key in "${!tags_list[@]}"; do
+        echo -e "${INFO} 🐛 DEBUG: tags_list[${key}] = ${tags_list[${key}]}"
+    done
+
     # Check the version on the kernel repository
     x="1"
     for key in "${!tags_list[@]}"; do
@@ -445,6 +460,7 @@ query_kernel() {
             # Query the name of the latest kernel version
             tmp_arr_kernels=()
             down_kernel_list=(${tags_list[${key}]})
+            echo -e "${INFO} 🐛 DEBUG: Processing key [${key}], down_kernel_list: ${down_kernel_list[@]}"
             i=1
             for kernel_var in "${down_kernel_list[@]}"; do
                 echo -e "${INFO} (${x}.${i}) Auto query the latest kernel version for [ ${key} - ${kernel_var} ]"
