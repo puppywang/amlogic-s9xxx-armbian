@@ -8,6 +8,7 @@ name: Compile Kernel (Host Cross-compile)
 
 on:
   repository_dispatch:
+    types: [compile-kernel-via-host]
   workflow_dispatch:
     inputs:
       kernel_source:

@@ -7,6 +7,7 @@ name: Build Armbian arm64 server image
 
 on:
   repository_dispatch:
+    types: [kernel-build-completed-stable, build-armbian-arm64-server-image]
   workflow_dispatch:
     inputs:
       set_release:
@@ -268,6 +269,17 @@ jobs:
     runs-on: ubuntu-24.04
     if: ${{ github.event.repository.owner.id }} == ${{ github.event.sender.id }}
 
+    env:
+      SET_RELEASE: ${{ github.event.client_payload.set_release || inputs.set_release || 'trixie' }}
+      ARMBIAN_BOARD: ${{ github.event.client_payload.armbian_board || inputs.armbian_board || 'ai3399-c' }}
+      ARMBIAN_KERNEL: ${{ github.event.client_payload.armbian_kernel || inputs.armbian_kernel || '6.12.y' }}
+      AUTO_KERNEL: ${{ github.event.client_payload.auto_kernel || inputs.auto_kernel || true }}
+      KERNEL_REPO: ${{ github.event.client_payload.kernel_repo || inputs.kernel_repo || 'puppywang/kernel' }}
+      KERNEL_USAGE: ${{ github.event.client_payload.kernel_usage || inputs.kernel_usage || 'stable' }}
+      ARMBIAN_FSTYPE: ${{ github.event.client_payload.armbian_fstype || inputs.armbian_fstype || 'ext4' }}
+      ARMBIAN_EDITION: ${{ github.event.client_payload.armbian_edition || inputs.armbian_edition || 'server' }}
+      BUILDER_NAME: ${{ github.event.client_payload.builder_name || inputs.builder_name || 'puppywang' }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -337,7 +349,7 @@ jobs:
           docker run --rm --privileged multiarch/qemu-user-static --reset -p yes 2>/dev/null || true
           # Compile method and parameter description: https://docs.armbian.com/Developer-Guide_Build-Options
           cd build/
-              ./compile.sh RELEASE=${{ inputs.set_release }} BOARD=odroidn2 BRANCH=current BUILD_MINIMAL=no \
+              ./compile.sh RELEASE=${{ env.SET_RELEASE }} BOARD=odroidn2 BRANCH=current BUILD_MINIMAL=no \
                            BUILD_ONLY=default HOST=armbian BUILD_DESKTOP=no EXPERT=yes KERNEL_CONFIGURE=no \
                            COMPRESS_OUTPUTIMAGE="sha" SHARE_LOG=yes
           echo "status=success" >> ${GITHUB_OUTPUT}
@@ -348,7 +360,7 @@ jobs:
         run: |
           # Organize and keep essential files, delete unnecessary files
           chmod +x ${ROOTFS_SCRIPT}
-          ${ROOTFS_SCRIPT} -v ${{ inputs.set_release }} -s true -c true -k true -p arm64
+          ${ROOTFS_SCRIPT} -v ${{ env.SET_RELEASE }} -s true -c true -k true -p arm64
 
           # Clean build directory except output folder
           cd build/
@@ -356,7 +368,7 @@ jobs:
 
           # Output cleaning result information
           df -hT ${PWD}
-          echo "build_tag=Armbian_${{ inputs.set_release }}_arm64_${{ inputs.armbian_edition }}_$(date +"%Y.%m")" >> ${GITHUB_ENV}
+          echo "build_tag=Armbian_${{ env.SET_RELEASE }}_arm64_${{ env.ARMBIAN_EDITION }}_$(date +"%Y.%m")" >> ${GITHUB_ENV}
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Upload Armbian image to Release
@@ -375,13 +387,13 @@ jobs:
         with:
           build_target: armbian
           armbian_path: build/output/images/*.img.gz
-          armbian_board: ${{ inputs.armbian_board }}
-          armbian_kernel: ${{ inputs.armbian_kernel }}
-          auto_kernel: ${{ inputs.auto_kernel }}
-          kernel_repo: ${{ inputs.kernel_repo }}
-          kernel_usage: ${{ inputs.kernel_usage }}
-          armbian_fstype: ${{ inputs.armbian_fstype }}
-          builder_name: ${{ inputs.builder_name }}
+          armbian_board: ${{ env.ARMBIAN_BOARD }}
+          armbian_kernel: ${{ env.ARMBIAN_KERNEL }}
+          auto_kernel: ${{ env.AUTO_KERNEL }}
+          kernel_repo: ${{ env.KERNEL_REPO }}
+          kernel_usage: ${{ env.KERNEL_USAGE }}
+          armbian_fstype: ${{ env.ARMBIAN_FSTYPE }}
+          builder_name: ${{ env.BUILDER_NAME }}
 
       - name: Upload Rebuild image to Release
         uses: ncipollo/release-action@main
