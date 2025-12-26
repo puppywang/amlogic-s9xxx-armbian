@@ -1,0 +1,12 @@
+verbosity=7
+bootlogo=false
+fdtfile=rockchip/rk3399-ai3399-c.dtb
+rootdev=/dev/mmcblk0p2
+rootfstype=ext4
+rootflags=rw,errors=remount-ro
+overlay_prefix=rk3399
+overlays=
+extraargs=rw rootwait
+extraboardargs=net.ifnames=0 max_loop=128
+docker_optimizations=on
+earlycon=on
