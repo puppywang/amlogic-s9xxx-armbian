@@ -306,6 +306,69 @@ runs:
 
                 echo -e "🐳 Starting native kernel compilation in Docker container..."
                 docker exec -i "${docker_container}" bash "${docker_script}" "${make_args[@]}"
+                
+                # Compile external rtl8723ds driver (more stable than mainline rtw88)
+                echo -e "🔧 Compiling external rtl8723ds driver..."
+                docker exec -i "${docker_container}" bash -c '
+                    set -e
+                    KERNEL_PATH="/opt/kernel/compile-kernel/kernel"
+                    KERNEL_DIR=$(ls -d ${KERNEL_PATH}/linux-* 2>/dev/null | head -1)
+                    OUTPUT_PATH="/opt/kernel/compile-kernel/output"
+                    
+                    if [[ -z "${KERNEL_DIR}" || ! -d "${KERNEL_DIR}" ]]; then
+                        echo "Kernel source not found, skipping rtl8723ds compilation"
+                        exit 0
+                    fi
+                    
+                    echo "Found kernel source: ${KERNEL_DIR}"
+                    
+                    # Get kernel version for module path
+                    KERNEL_VER=$(ls ${OUTPUT_PATH}/*.tar.gz 2>/dev/null | head -1 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+-[a-z]+" || echo "")
+                    if [[ -z "${KERNEL_VER}" ]]; then
+                        echo "No kernel package found, skipping driver compilation"
+                        exit 0
+                    fi
+                    
+                    echo "Target kernel version: ${KERNEL_VER}"
+                    
+                    # Clone rtl8723ds driver
+                    RTL_DIR="/tmp/rtl8723ds"
+                    rm -rf ${RTL_DIR}
+                    git clone --depth=1 https://github.com/lwfinger/rtl8723ds.git ${RTL_DIR}
+                    cd ${RTL_DIR}
+                    
+                    # Compile driver
+                    make KSRC=${KERNEL_DIR} -j$(nproc)
+                    
+                    if [[ -f "8723ds.ko" ]]; then
+                        echo "Driver compiled successfully, injecting into kernel package..."
+                        
+                        # Extract modules package, add driver, repack
+                        MODULES_PKG=$(ls ${OUTPUT_PATH}/*/modules-*.tar.gz 2>/dev/null | head -1)
+                        if [[ -f "${MODULES_PKG}" ]]; then
+                            WORK_DIR="/tmp/modules_work"
+                            rm -rf ${WORK_DIR} && mkdir -p ${WORK_DIR}
+                            cd ${WORK_DIR}
+                            tar -xzf "${MODULES_PKG}"
+                            
+                            # Find modules directory
+                            MOD_DIR=$(find . -type d -name "kernel" | head -1)
+                            if [[ -n "${MOD_DIR}" ]]; then
+                                mkdir -p "${MOD_DIR}/drivers/net/wireless/realtek/rtl8723ds"
+                                cp ${RTL_DIR}/8723ds.ko "${MOD_DIR}/drivers/net/wireless/realtek/rtl8723ds/"
+                                
+                                # Repack
+                                tar -czf "${MODULES_PKG}" *
+                                echo "rtl8723ds driver injected successfully!"
+                            fi
+                        fi
+                    else
+                        echo "Driver compilation failed, continuing without it"
+                    fi
+                    
+                    # Cleanup
+                    rm -rf ${RTL_DIR} /tmp/modules_work
+                ' || echo "rtl8723ds compilation skipped or failed, continuing..."
             else
                 echo -e "🖥️ Starting kernel cross-compilation on host system..."
                 sudo ./recompile "${make_args[@]}"
