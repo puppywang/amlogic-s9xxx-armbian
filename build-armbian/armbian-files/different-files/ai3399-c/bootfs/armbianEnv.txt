@@ -7,6 +7,6 @@ rootflags=rw,errors=remount-ro
 overlay_prefix=rk3399
 overlays=
 extraargs=rw rootwait
-extraboardargs=net.ifnames=0 max_loop=128
+extraboardargs=net.ifnames=0 max_loop=128 usb-storage.quirks=0x152d:0x0576:u
 docker_optimizations=on
 earlycon=on
