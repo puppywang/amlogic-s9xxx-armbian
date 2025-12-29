@@ -665,6 +665,26 @@ compile_kernel() {
     make ${silent_print} ${MAKE_SET_STRING} CC="${CC}" LD="${LD}" INSTALL_MOD_PATH=${output_path}/modules modules_install
     [[ "${?}" -eq "0" ]] && echo -e "${SUCCESS} The modules is installed successfully."
 
+    # Compile external rtl8723ds driver (Realtek official, more stable than mainline rtw88)
+    rtl8723ds_path="${kernel_path}/drivers/rtl8723ds"
+    if [[ ! -d "${rtl8723ds_path}" ]]; then
+        echo -e "${STEPS} Cloning rtl8723ds driver from lwfinger/rtl8723ds..."
+        git clone -q --depth=1 https://github.com/lwfinger/rtl8723ds.git ${rtl8723ds_path}
+    fi
+    if [[ -d "${rtl8723ds_path}" ]]; then
+        echo -e "${STEPS} Compiling external rtl8723ds driver..."
+        cd ${rtl8723ds_path}
+        make ARCH=${SRC_ARCH} CROSS_COMPILE=${CROSS_COMPILE} KSRC=${kernel_path}/${local_kernel_path} -j${PROCESS}
+        if [[ "${?}" -eq "0" ]]; then
+            # Install the module
+            install -Dm644 8723ds.ko ${output_path}/modules/lib/modules/${kernel_outname}/kernel/drivers/net/wireless/realtek/rtl8723ds/8723ds.ko
+            echo -e "${SUCCESS} The rtl8723ds driver is compiled and installed successfully."
+        else
+            echo -e "${WARNING} Failed to compile rtl8723ds driver, falling back to mainline driver."
+        fi
+        cd ${kernel_path}/${local_kernel_path}
+    fi
+
     # Strip debug information
     STRIP="${CROSS_COMPILE}strip"
     find ${output_path}/modules -name "*.ko" -print0 | xargs -0 ${STRIP} --strip-debug 2>/dev/null
