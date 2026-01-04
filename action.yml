@@ -296,6 +296,16 @@ runs:
                 echo -e "♻️ Syncing scripts in Docker container..."
                 docker exec -i "${docker_container}" bash "${docker_script}" -u
 
+                echo -e "📜 Injecting custom compile scripts into Docker container..."
+                compile_script_path="compile-kernel/tools/script"
+                if [[ -d "${compile_script_path}" ]]; then
+                    docker cp ${compile_script_path}/. "${docker_container}":/opt/kernel/compile-kernel/tools/script/
+                    # Also update the main recompile script
+                    docker exec -i "${docker_container}" cp /opt/kernel/compile-kernel/tools/script/armbian_compile_kernel.sh /opt/kernel/recompile
+                    docker exec -i "${docker_container}" chmod +x /opt/kernel/recompile
+                    echo -e "✅ Custom compile scripts injected (with RTL8723DS driver support)"
+                fi
+
                 echo -e "✅ Injecting custom configs into Docker container..."
                 [[ -d "${config_filepath}" ]] && docker cp ${config_filepath}/. "${docker_container}":/opt/kernel/compile-kernel/tools/config/
                 docker exec -i "${docker_container}" ls -Alh /opt/kernel/compile-kernel/tools/config/ || true
