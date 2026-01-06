@@ -665,11 +665,12 @@ compile_kernel() {
     make ${silent_print} ${MAKE_SET_STRING} CC="${CC}" LD="${LD}" INSTALL_MOD_PATH=${output_path}/modules modules_install
     [[ "${?}" -eq "0" ]] && echo -e "${SUCCESS} The modules is installed successfully."
 
-    # Compile external rtl8723ds driver (Realtek official, more stable than mainline rtw88)
+    # Compile external rtl8723ds driver (vendor driver, more stable than mainline rtw88)
+    # Using Benetti-Engineering fork which is actively maintained for newer kernels
     rtl8723ds_path="${kernel_path}/drivers/rtl8723ds"
     if [[ ! -d "${rtl8723ds_path}" ]]; then
-        echo -e "${STEPS} Cloning rtl8723ds driver from lwfinger/rtl8723ds..."
-        git clone -q --depth=1 https://github.com/lwfinger/rtl8723ds.git ${rtl8723ds_path}
+        echo -e "${STEPS} Cloning rtl8723ds driver from Benetti-Engineering/rtl8723ds..."
+        git clone -q --depth=1 https://github.com/Benetti-Engineering/rtl8723ds.git ${rtl8723ds_path}
     fi
     if [[ -d "${rtl8723ds_path}" ]]; then
         echo -e "${STEPS} Compiling external rtl8723ds driver..."
