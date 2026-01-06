@@ -674,11 +674,30 @@ compile_kernel() {
     if [[ -d "${rtl8723ds_path}" ]]; then
         echo -e "${STEPS} Compiling external rtl8723ds driver..."
         cd ${rtl8723ds_path}
+        echo -e "${INFO} Build directory: $(pwd)"
+        echo -e "${INFO} Kernel source: ${kernel_path}/${local_kernel_path}"
         make ARCH=${SRC_ARCH} CROSS_COMPILE=${CROSS_COMPILE} KSRC=${kernel_path}/${local_kernel_path} -j${PROCESS}
         if [[ "${?}" -eq "0" ]]; then
-            # Install the module
-            install -Dm644 8723ds.ko ${output_path}/modules/lib/modules/${kernel_outname}/kernel/drivers/net/wireless/realtek/rtl8723ds/8723ds.ko
-            echo -e "${SUCCESS} The rtl8723ds driver is compiled and installed successfully."
+            # Verify .ko file was created
+            if [[ -f "8723ds.ko" ]]; then
+                echo -e "${INFO} Found compiled driver: $(pwd)/8723ds.ko ($(ls -lh 8723ds.ko | awk '{print $5}'))"
+                # Install the module
+                local install_dest="${output_path}/modules/lib/modules/${kernel_outname}/kernel/drivers/net/wireless/realtek/rtl8723ds"
+                echo -e "${INFO} Installing to: ${install_dest}/8723ds.ko"
+                install -Dm644 8723ds.ko ${install_dest}/8723ds.ko
+                if [[ "${?}" -eq "0" ]] && [[ -f "${install_dest}/8723ds.ko" ]]; then
+                    echo -e "${SUCCESS} The rtl8723ds driver is compiled and installed successfully."
+                    echo -e "${INFO} Installed file: $(ls -lh ${install_dest}/8723ds.ko)"
+                else
+                    echo -e "${WARNING} install command failed or file not found after install!"
+                    echo -e "${INFO} Trying to verify destination directory..."
+                    ls -la ${install_dest}/ 2>/dev/null || echo -e "${WARNING} Destination directory does not exist!"
+                fi
+            else
+                echo -e "${WARNING} Compilation succeeded but 8723ds.ko not found in $(pwd)!"
+                echo -e "${INFO} Files in current directory:"
+                ls -la *.ko 2>/dev/null || echo -e "${WARNING} No .ko files found!"
+            fi
         else
             echo -e "${WARNING} Failed to compile rtl8723ds driver, falling back to mainline driver."
         fi
