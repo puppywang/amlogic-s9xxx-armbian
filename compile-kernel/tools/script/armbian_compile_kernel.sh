@@ -705,6 +705,44 @@ compile_kernel() {
         cd ${kernel_path}/${local_kernel_path}
     fi
 
+    # Compile external rtl8812au driver (for USB WiFi adapters like RTL8812AU/RTL8821AU/RTL8814AU)
+    # Using aircrack-ng fork which is actively maintained with kernel 6.14+ support
+    rtl8812au_path="${kernel_path}/drivers/rtl8812au"
+    if [[ ! -d "${rtl8812au_path}" ]]; then
+        echo -e "${STEPS} Cloning rtl8812au driver from aircrack-ng/rtl8812au..."
+        git clone -q --depth=1 -b v5.6.4.2 https://github.com/aircrack-ng/rtl8812au.git ${rtl8812au_path}
+    fi
+    if [[ -d "${rtl8812au_path}" ]]; then
+        echo -e "${STEPS} Compiling external rtl8812au driver..."
+        cd ${rtl8812au_path}
+        echo -e "${INFO} Build directory: $(pwd)"
+        echo -e "${INFO} Kernel source: ${kernel_path}/${local_kernel_path}"
+        make ARCH=${SRC_ARCH} CROSS_COMPILE=${CROSS_COMPILE} KSRC=${kernel_path}/${local_kernel_path} -j${PROCESS}
+        if [[ "${?}" -eq "0" ]]; then
+            # Verify .ko file was created
+            if [[ -f "88XXau.ko" ]]; then
+                echo -e "${INFO} Found compiled driver: $(pwd)/88XXau.ko ($(ls -lh 88XXau.ko | awk '{print $5}'))"
+                # Install the module
+                local install_dest="${output_path}/modules/lib/modules/${kernel_outname}/kernel/drivers/net/wireless/realtek/rtl8812au"
+                echo -e "${INFO} Installing to: ${install_dest}/88XXau.ko"
+                install -Dm644 88XXau.ko ${install_dest}/88XXau.ko
+                if [[ "${?}" -eq "0" ]] && [[ -f "${install_dest}/88XXau.ko" ]]; then
+                    echo -e "${SUCCESS} The rtl8812au driver is compiled and installed successfully."
+                    echo -e "${INFO} Installed file: $(ls -lh ${install_dest}/88XXau.ko)"
+                else
+                    echo -e "${WARNING} install command failed or file not found after install!"
+                fi
+            else
+                echo -e "${WARNING} Compilation succeeded but 88XXau.ko not found in $(pwd)!"
+                echo -e "${INFO} Files in current directory:"
+                ls -la *.ko 2>/dev/null || echo -e "${WARNING} No .ko files found!"
+            fi
+        else
+            echo -e "${WARNING} Failed to compile rtl8812au driver."
+        fi
+        cd ${kernel_path}/${local_kernel_path}
+    fi
+
     # Strip debug information
     STRIP="${CROSS_COMPILE}strip"
     find ${output_path}/modules -name "*.ko" -print0 | xargs -0 ${STRIP} --strip-debug 2>/dev/null
