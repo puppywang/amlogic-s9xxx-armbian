@@ -658,12 +658,20 @@ compile_kernel() {
     echo -e "${STEPS} Start compilation kernel [ ${local_kernel_path} ]..."
     make ${silent_print} ${MAKE_SET_STRING} CC="${CC}" LD="${LD}" Image modules dtbs -j${PROCESS}
     #make ${MAKE_SET_STRING} CC="${CC}" LD="${LD}" bindeb-pkg KDEB_COMPRESS=xz KBUILD_DEBARCH=arm64 -j${PROCESS}
-    [[ "${?}" -eq "0" ]] && echo -e "${SUCCESS} The kernel is compiled successfully."
+    if [[ "${?}" -eq "0" ]]; then
+        echo -e "${SUCCESS} The kernel is compiled successfully."
+    else
+        error_msg "Kernel compilation failed!"
+    fi
 
     # Install modules
     echo -e "${STEPS} Install modules ..."
     make ${silent_print} ${MAKE_SET_STRING} CC="${CC}" LD="${LD}" INSTALL_MOD_PATH=${output_path}/modules modules_install
-    [[ "${?}" -eq "0" ]] && echo -e "${SUCCESS} The modules is installed successfully."
+    if [[ "${?}" -eq "0" ]]; then
+        echo -e "${SUCCESS} The modules is installed successfully."
+    else
+        error_msg "Module installation failed!"
+    fi
 
     # Compile external rtl8723ds driver (vendor driver, more stable than mainline rtw88)
     # Using Benetti-Engineering fork which is actively maintained for newer kernels
@@ -677,30 +685,33 @@ compile_kernel() {
         cd ${rtl8723ds_path}
         echo -e "${INFO} Build directory: $(pwd)"
         echo -e "${INFO} Kernel source: ${kernel_path}/${local_kernel_path}"
-        make ARCH=${SRC_ARCH} CROSS_COMPILE=${CROSS_COMPILE} KSRC=${kernel_path}/${local_kernel_path} -j${PROCESS}
-        if [[ "${?}" -eq "0" ]]; then
-            # Verify .ko file was created
-            if [[ -f "8723ds.ko" ]]; then
-                echo -e "${INFO} Found compiled driver: $(pwd)/8723ds.ko ($(ls -lh 8723ds.ko | awk '{print $5}'))"
-                # Install the module
-                local install_dest="${output_path}/modules/lib/modules/${kernel_outname}/kernel/drivers/net/wireless/realtek/rtl8723ds"
-                echo -e "${INFO} Installing to: ${install_dest}/8723ds.ko"
-                install -Dm644 8723ds.ko ${install_dest}/8723ds.ko
-                if [[ "${?}" -eq "0" ]] && [[ -f "${install_dest}/8723ds.ko" ]]; then
-                    echo -e "${SUCCESS} The rtl8723ds driver is compiled and installed successfully."
-                    echo -e "${INFO} Installed file: $(ls -lh ${install_dest}/8723ds.ko)"
+
+        # Check if Module.symvers exists (critical for external modules)
+        if [[ ! -f "${kernel_path}/${local_kernel_path}/Module.symvers" ]]; then
+            echo -e "${WARNING} Module.symvers missing! Skipping external driver compilation."
+        else
+            make ARCH=${SRC_ARCH} CROSS_COMPILE=${CROSS_COMPILE} KSRC=${kernel_path}/${local_kernel_path} -j${PROCESS}
+            if [[ "${?}" -eq "0" ]]; then
+                # Verify .ko file was created
+                if [[ -f "8723ds.ko" ]]; then
+                    echo -e "${INFO} Found compiled driver: $(pwd)/8723ds.ko ($(ls -lh 8723ds.ko | awk '{print $5}'))"
+                    # Install the module
+                    local install_dest="${output_path}/modules/lib/modules/${kernel_outname}/kernel/drivers/net/wireless/realtek/rtl8723ds"
+                    echo -e "${INFO} Installing to: ${install_dest}/8723ds.ko"
+                    install -Dm644 8723ds.ko ${install_dest}/8723ds.ko
+                    if [[ "${?}" -eq "0" ]] && [[ -f "${install_dest}/8723ds.ko" ]]; then
+                        echo -e "${SUCCESS} The rtl8723ds driver is compiled and installed successfully."
+                        echo -e "${INFO} Installed file: $(ls -lh ${install_dest}/8723ds.ko)"
+                    else
+                        echo -e "${WARNING} install command failed or file not found after install!"
+                        ls -la ${install_dest}/ 2>/dev/null || echo -e "${WARNING} Destination directory does not exist!"
+                    fi
                 else
-                    echo -e "${WARNING} install command failed or file not found after install!"
-                    echo -e "${INFO} Trying to verify destination directory..."
-                    ls -la ${install_dest}/ 2>/dev/null || echo -e "${WARNING} Destination directory does not exist!"
+                    echo -e "${WARNING} Compilation succeeded but 8723ds.ko not found in $(pwd)!"
                 fi
             else
-                echo -e "${WARNING} Compilation succeeded but 8723ds.ko not found in $(pwd)!"
-                echo -e "${INFO} Files in current directory:"
-                ls -la *.ko 2>/dev/null || echo -e "${WARNING} No .ko files found!"
+                echo -e "${WARNING} Failed to compile rtl8723ds driver, falling back to mainline driver."
             fi
-        else
-            echo -e "${WARNING} Failed to compile rtl8723ds driver, falling back to mainline driver."
         fi
         cd ${kernel_path}/${local_kernel_path}
     fi
@@ -717,28 +728,33 @@ compile_kernel() {
         cd ${rtl8812au_path}
         echo -e "${INFO} Build directory: $(pwd)"
         echo -e "${INFO} Kernel source: ${kernel_path}/${local_kernel_path}"
-        make ARCH=${SRC_ARCH} CROSS_COMPILE=${CROSS_COMPILE} KSRC=${kernel_path}/${local_kernel_path} -j${PROCESS}
-        if [[ "${?}" -eq "0" ]]; then
-            # Verify .ko file was created
-            if [[ -f "88XXau.ko" ]]; then
-                echo -e "${INFO} Found compiled driver: $(pwd)/88XXau.ko ($(ls -lh 88XXau.ko | awk '{print $5}'))"
-                # Install the module
-                local install_dest="${output_path}/modules/lib/modules/${kernel_outname}/kernel/drivers/net/wireless/realtek/rtl8812au"
-                echo -e "${INFO} Installing to: ${install_dest}/88XXau.ko"
-                install -Dm644 88XXau.ko ${install_dest}/88XXau.ko
-                if [[ "${?}" -eq "0" ]] && [[ -f "${install_dest}/88XXau.ko" ]]; then
-                    echo -e "${SUCCESS} The rtl8812au driver is compiled and installed successfully."
-                    echo -e "${INFO} Installed file: $(ls -lh ${install_dest}/88XXau.ko)"
+        
+        # Check if Module.symvers exists (critical for external modules)
+        if [[ ! -f "${kernel_path}/${local_kernel_path}/Module.symvers" ]]; then
+            echo -e "${WARNING} Module.symvers missing! Skipping external driver compilation."
+        else
+            make ARCH=${SRC_ARCH} CROSS_COMPILE=${CROSS_COMPILE} KSRC=${kernel_path}/${local_kernel_path} -j${PROCESS}
+            if [[ "${?}" -eq "0" ]]; then
+                # Verify .ko file was created
+                if [[ -f "88XXau.ko" ]]; then
+                    echo -e "${INFO} Found compiled driver: $(pwd)/88XXau.ko ($(ls -lh 88XXau.ko | awk '{print $5}'))"
+                    # Install the module
+                    local install_dest="${output_path}/modules/lib/modules/${kernel_outname}/kernel/drivers/net/wireless/realtek/rtl8812au"
+                    echo -e "${INFO} Installing to: ${install_dest}/88XXau.ko"
+                    install -Dm644 88XXau.ko ${install_dest}/88XXau.ko
+                    if [[ "${?}" -eq "0" ]] && [[ -f "${install_dest}/88XXau.ko" ]]; then
+                        echo -e "${SUCCESS} The rtl8812au driver is compiled and installed successfully."
+                        echo -e "${INFO} Installed file: $(ls -lh ${install_dest}/88XXau.ko)"
+                    else
+                        echo -e "${WARNING} install command failed or file not found after install!"
+                        ls -la ${install_dest}/ 2>/dev/null || echo -e "${WARNING} Destination directory does not exist!"
+                    fi
                 else
-                    echo -e "${WARNING} install command failed or file not found after install!"
+                    echo -e "${WARNING} Compilation succeeded but 88XXau.ko not found in $(pwd)!"
                 fi
             else
-                echo -e "${WARNING} Compilation succeeded but 88XXau.ko not found in $(pwd)!"
-                echo -e "${INFO} Files in current directory:"
-                ls -la *.ko 2>/dev/null || echo -e "${WARNING} No .ko files found!"
+                echo -e "${WARNING} Failed to compile rtl8812au driver."
             fi
-        else
-            echo -e "${WARNING} Failed to compile rtl8812au driver."
         fi
         cd ${kernel_path}/${local_kernel_path}
     fi
@@ -764,6 +780,14 @@ generate_uinitrd() {
     mv -f /boot/{config-*,initrd.img-*,System.map-*,vmlinuz-*,uInitrd*,*Image} -t ${boot_backup_path} 2>/dev/null
     # Copy /boot related files into armbian system
     [[ -d "/boot" ]] || mkdir -p /boot
+
+    if [[ ! -f "${kernel_path}/${local_kernel_path}/System.map" ]]; then
+        error_msg "Missing System.map file!"
+    fi
+    if [[ ! -f "${kernel_path}/${local_kernel_path}/arch/${SRC_ARCH}/boot/Image" ]]; then
+        error_msg "Missing Kernel Image file!"
+    fi
+
     cp -f ${kernel_path}/${local_kernel_path}/System.map /boot/System.map-${kernel_outname}
     cp -f ${kernel_path}/${local_kernel_path}/.config /boot/config-${kernel_outname}
     cp -f ${kernel_path}/${local_kernel_path}/arch/${SRC_ARCH}/boot/Image /boot/vmlinuz-${kernel_outname}
